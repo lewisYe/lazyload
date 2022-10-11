@@ -27,18 +27,17 @@ export default function IndexPage() {
  
   return (
     <div>
-      <div style={{ height: 1000}}></div>
-      <div id="demo" style={{ border: '1px solid red' , overflowY: 'scroll'}}>
-        <LazyLoad height={500} scrollContainer={'#hhhhh'}>
-          <div style={{ height: 1000}}></div>
-          <div style={{ width: 500, height: 500, background: 'red'}}></div>
-        </LazyLoad>
-      </div>
+      <div style={{ height: 1000 }}></div>
       <LazyLoad height={500}>
-        <div style={{ width: 500, height: 500, background: 'red'}}></div>
+        <div style={{ width: 500, height: 500, background: 'red' }}></div>
       </LazyLoad>
-      <div style={{ height: 1000}}></div>
-      <LazyLoad.Img width={500} height={500} source={source} defaultSource={defaultSource}/>
+      <div style={{ height: 1000 }}></div>
+      <LazyLoad.Img
+        width={500}
+        height={500}
+        source={source}
+        defaultSource={defaultSource}
+      />
     </div>
   );
 }
@@ -53,7 +52,6 @@ LazyLoadProps {
   height?: number;
   className?: string;
   styles?: object;
-  scrollContainer?: string;
 }
 
 
@@ -63,6 +61,5 @@ LazyLoadImgProps {
   height?: number;
   source?: string[];
   styles?: object;
-  scrollContainer?: string;
 }
 ```

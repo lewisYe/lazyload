@@ -1,36 +1,66 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 
+import throttle from './throttle';
+
 interface LazyLoadProps {
   children: React.ReactNode;
   height?: number;
   className?: string;
   styles?: object;
-  scrollContainer?: string;
 }
 
-const defaultRoot = document.querySelector('html');
+const defaultBoundingClientRect = {
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  width: 0,
+  height: 0,
+};
 
 const LazyLoad = (props: LazyLoadProps) => {
-  const { children, height, className, styles = {}, scrollContainer } = props;
+  const { children, height, className, styles = {} } = props;
   const [isVisible, setIsVisible] = useState(false);
   const lazyloadRef = useRef(null);
 
+  const originalCheck = () => {
+    const node = lazyloadRef.current;
+    let top, height;
+    try {
+      ({ top, height } = node?.getBoundingClientRect());
+    } catch (e) {
+      ({ top, height } = defaultBoundingClientRect);
+    }
+    const windowInnerHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+    const visible = top <= windowInnerHeight && top + height >= 0;
+    setIsVisible(visible);
+  };
+
   const checkIsVisible = () => {
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].intersectionRatio <= 0) return;
-        setIsVisible(true);
-      },
-      {
-        root: scrollContainer
-          ? document.querySelector(`${scrollContainer}`)
-          : defaultRoot,
-      },
-    );
-    intersectionObserver.observe(lazyloadRef.current!);
+    const node = lazyloadRef.current;
+    
+    if (window.IntersectionObserver) {
+      const intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].intersectionRatio <= 0) return;
+          setIsVisible(true);
+        },
+      );
+      intersectionObserver.observe(node!);
+      return;
+    }
+    originalCheck();
+    document.addEventListener('scroll', throttle(originalCheck, 500));
+    return () => {
+      document.removeEventListener('scroll', throttle(originalCheck, 500));
+    };
   };
   useLayoutEffect(() => {
-    checkIsVisible();
+    const next = checkIsVisible();
+    return () => {
+      next?.();
+    };
   }, []);
 
   return (
@@ -46,7 +76,6 @@ interface LazyLoadImgProps {
   height?: number;
   source?: string[];
   styles?: object;
-  scrollContainer?: string;
 }
 
 const LazyLoadImg = (props: LazyLoadImgProps) => {
@@ -56,27 +85,48 @@ const LazyLoadImg = (props: LazyLoadImgProps) => {
     width,
     height,
     styles = {},
-    scrollContainer,
   } = props;
   const [isVisible, setIsVisible] = useState(false);
   const lazyloadRef = useRef(null);
 
+  const originalCheck = () => {
+    const node = lazyloadRef.current;
+    let top, height;
+    try {
+      ({ top, height } = node?.getBoundingClientRect());
+    } catch (e) {
+      ({ top, height } = defaultBoundingClientRect);
+    }
+    const windowInnerHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+    const visible = top <= windowInnerHeight && top + height >= 0;
+    setIsVisible(visible);
+  };
+
   const checkIsVisible = () => {
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].intersectionRatio <= 0) return;
-        setIsVisible(true);
-      },
-      {
-        root: scrollContainer
-          ? document.querySelector(`${scrollContainer}`)
-          : defaultRoot,
-      },
-    );
-    intersectionObserver.observe(lazyloadRef.current!);
+    const node = lazyloadRef.current;
+    
+    if (window.IntersectionObserver) {
+      const intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].intersectionRatio <= 0) return;
+          setIsVisible(true);
+        },
+      );
+      intersectionObserver.observe(node!);
+      return;
+    }
+    originalCheck();
+    document.addEventListener('scroll', throttle(originalCheck, 500));
+    return () => {
+      document.removeEventListener('scroll', throttle(originalCheck, 500));
+    };
   };
   useLayoutEffect(() => {
-    checkIsVisible();
+    const next = checkIsVisible();
+    return () => {
+      next?.();
+    };
   }, []);
 
   return (
